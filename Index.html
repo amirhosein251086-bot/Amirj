@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌹 ۸۷ گل برای تو</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Tahoma', 'Arial', sans-serif;
+    background: linear-gradient(180deg, #ffe0ec 0%, #ffd1dc 100%);
+    touch-action: none;
+  }
+  #game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #hud {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255,255,255,0.85);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-weight: bold;
+    color: #c2185b;
+    font-size: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+  #hint {
+    position: absolute;
+    bottom: 20px;
+    right: 50%;
+    transform: translateX(50%);
+    background: rgba(255,255,255,0.85);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #7b1fa2;
+    z-index: 10;
+  }
+  .flower {
+    position: absolute;
+    font-size: 30px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+  #player {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    font-size: 42px;
+    text-align: center;
+    line-height: 50px;
+    z-index: 5;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+  }
+  #partner {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    font-size: 52px;
+    text-align: center;
+    line-height: 60px;
+    z-index: 5;
+    animation: bounce 1s infinite ease-in-out;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  #endScreen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fbc2eb 100%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    z-index: 100;
+    animation: fadeIn 1.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  #endScreen .big {
+    font-size: 40px;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  #endScreen h1 {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 8px rgba(194,24,91,0.5);
+    line-height: 1.8;
+  }
+  #endScreen p {
+    color: #fff;
+    font-size: 20px;
+    text-shadow: 0 2px 6px rgba(194,24,91,0.4);
+    margin-top: 10px;
+  }
+  #hearts {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .heart {
+    position: absolute;
+    font-size: 24px;
+    animation: floatUp 3s linear infinite;
+    opacity: 0.8;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+  }
+  #loseScreen {
+    position: absolute;
+    inset: 0;
+    background: rgba(60, 20, 40, 0.9);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    z-index: 100;
+    color: #fff;
+  }
+  #loseScreen h2 {
+    font-size: 26px;
+    margin-bottom: 15px;
+  }
+  #loseScreen button {
+    background: #ff4081;
+    color: #fff;
+    border: none;
+    padding: 14px 40px;
+    font-size: 18px;
+    font-family: inherit;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    margin-top: 15px;
+  }
+  #loseScreen button:active {
+    transform: scale(0.95);
+  }
+</style>
+</head>
+<body>
+<div id="game">
+  <div id="hud">🌹 ۰ / ۸۷</div>
+  <div id="hint">با انگشتت بکش 👆</div>
+  <div id="partner">👸🏻</div>
+  <div id="player">👦🏻</div>
+
+  <div id="hearts"></div>
+
+  <div id="loseScreen">
+    <h2>💔 یه گل از دست رفت...</h2>
+    <p style="margin-bottom:25px; font-size:16px;">دوباره تلاش کن</p>
+    <button onclick="restartGame()">🔄 شروع دوباره</button>
+  </div>
+
+  <div id="endScreen">
+    <div class="big">🌹💐🌹</div>
+    <h1 id="mainMessage"></h1>
+    <p id="subMessage"></p>
+    <div id="endHearts"></div>
+  </div>
+</div>
+
+<script>
+// ============= تنظیمات =============
+const TOTAL_FLOWERS = 87;
+const PLAYER_SPEED = 0.35;
+const PLAYER_RADIUS = 25;
+const FLOWER_SPEED = 0.15;
+const DANGER_DISTANCE = 38;
+
+const game = document.getElementById('game');
+const player = document.getElementById('player');
+const partner = document.getElementById('partner');
+const hud = document.getElementById('hud');
+const hint = document.getElementById('hint');
+const loseScreen = document.getElementById('loseScreen');
+const endScreen = document.getElementById('endScreen');
+const heartsContainer = document.getElementById('hearts');
+const endHearts = document.getElementById('endHearts');
+const bgMusic = document.getElementById('bgMusic');
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+let playerX, playerY;
+let targetX, targetY;
+let collected = 0;
+let flowers = [];
+let gameState = 'playing';
+let giveProgress = 0;
+let animationId = null;
+
+// عدد به فارسی
+function toFa(n) {
+  const fa = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  return String(n).replace(/\d/g, d => fa[d]);
+}
+
+// ============= شروع آهنگ با اولین لمس =============
+function startMusic() {
+  if (bgMusic.paused) {
+    bgMusic.volume = 0.35;
+    bgMusic.play().catch(e => console.log('خطای پخش:', e));
+  }
+}
+document.addEventListener('touchstart', startMusic, { once: true });
+document.addEventListener('click', startMusic, { once: true });
+
+// ============= راه‌اندازی =============
+function initGame() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  gameState = 'playing';
+  collected = 0;
+  giveProgress = 0;
+  flowers = [];
+
+  game.innerHTML = '';
+  game.appendChild(hud);
+  game.appendChild(hint);
+  game.appendChild(player);
+  game.appendChild(partner);
+  game.appendChild(loseScreen);
+  game.appendChild(endScreen);
+  game.appendChild(heartsContainer);
+
+  endScreen.style.display = 'none';
+  loseScreen.style.display = 'none';
+  hint.style.display = 'block';
+  hud.style.display = 'block';
+  hud.textContent = `🌹 ${toFa(0)} / ${toFa(TOTAL_FLOWERS)}`;
+
+  playerX = W / 2;
+  playerY = H - 100;
+  targetX = playerX;
+  targetY = playerY;
+
+  partner.style.left = (W / 2 - 30) + 'px';
+  partner.style.top = (H * 0.15) + 'px';
+
+  const partnerX = W / 2;
+  const partnerY = H * 0.15;
+
+  for (let i = 0; i < TOTAL_FLOWERS; i++) {
+    let fx, fy, tries = 0;
+    do {
+      fx = 30 + Math.random() * (W - 60);
+      fy = 80 + Math.random() * (H - 200);
+      tries++;
+    } while (
+      tries < 50 &&
+      (Math.hypot(fx - partnerX, fy - partnerY) < 100 ||
+       Math.hypot(fx - W/2, fy - (H - 100)) < 80)
+    );
+
+    const el = document.createElement('div');
+    el.className = 'flower';
+    el.textContent = '🌹';
+    el.style.left = fx + 'px';
+    el.style.top = fy + 'px';
+    game.insertBefore(el, player);
+
+    flowers.push({
+      el, x: fx, y: fy, collected: false,
+      vx: (Math.random() - 0.5) * FLOWER_SPEED * 2,
+      vy: (Math.random() - 0.5) * FLOWER_SPEED * 2,
+      wobble: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+// ============= کنترل لمسی =============
+function handleMove(clientX, clientY) {
+  if (gameState !== 'playing') return;
+  targetX = clientX;
+  targetY = clientY - 30;
+}
+
+game.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  handleMove(t.clientX, t.clientY);
+}, { passive: false });
+
+game.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  handleMove(t.clientX, t.clientY);
+}, { passive: false });
+
+game.addEventListener('mousedown', e => handleMove(e.clientX, e.clientY));
+game.addEventListener('mousemove', e => {
+  if (e.buttons === 1) handleMove(e.clientX, e.clientY);
+});
+
+// ============= حلقه بازی =============
+function loop() {
+  if (gameState === 'playing') updatePlaying();
+  else if (gameState === 'giving') updateGiving();
+  animationId = requestAnimationFrame(loop);
+}
+
+function updatePlaying() {
+  const dx = targetX - playerX;
+  const dy = targetY - playerY;
+  const dist = Math.hypot(dx, dy);
+  if (dist > 2) {
+    playerX += dx * PLAYER_SPEED;
+    playerY += dy * PLAYER_SPEED;
+  }
+  playerX = Math.max(PLAYER_RADIUS, Math.min(W - PLAYER_RADIUS, playerX));
+  playerY = Math.max(PLAYER_RADIUS, Math.min(H - PLAYER_RADIUS, playerY));
+  player.style.left = (playerX - 25) + 'px';
+  player.style.top = (playerY - 25) + 'px';
+
+  for (let i = 0; i < flowers.length; i++) {
+    const f = flowers[i];
+    if (f.collected) continue;
+
+    f.wobble += 0.05;
+    f.x += f.vx;
+    f.y += f.vy;
+
+    if (f.x < 20 || f.x > W - 40) f.vx *= -1;
+    if (f.y < 60 || f.y > H - 60) f.vy *= -1;
+
+    f.el.style.left = f.x + 'px';
+    f.el.style.top = (f.y + Math.sin(f.wobble) * 3) + 'px';
+
+    const d = Math.hypot(f.x + 20 - playerX, f.y + 20 - playerY);
+
+    if (d < DANGER_DISTANCE) {
+      f.collected = true;
+      f.el.remove();
+      collected++;
+      hud.textContent = `🌹 ${toFa(collected)} / ${toFa(TOTAL_FLOWERS)}`;
+      spawnHeart(f.x, f.y);
+
+      if (collected >= TOTAL_FLOWERS) {
+        gameState = 'giving';
+        giveProgress = 0;
+        hint.style.display = 'none';
+      }
+    }
+  }
+}
+
+function updateGiving() {
+  giveProgress++;
+  const partnerX = W / 2;
+  const partnerY = H * 0.15 + 60;
+
+  const dx = partnerX - playerX;
+  const dy = partnerY - playerY;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist > 3) {
+    playerX += dx * 0.05;
+    playerY += dy * 0.05;
+    player.style.left = (playerX - 25) + 'px';
+    player.style.top = (playerY - 25) + 'px';
+  } else {
+    if (giveProgress > 60 && gameState === 'giving') {
+      gameState = 'done';
+      showEnd();
+    }
+  }
+
+  if (giveProgress % 8 === 0) {
+    spawnHeart(partnerX + (Math.random() - 0.5) * 100, partnerY);
+  }
+}
+
+function spawnHeart(x, y) {
+  const h = document.createElement('div');
+  h.className = 'heart';
+  h.textContent = ['❤️','💕','💖','🌹'][Math.floor(Math.random()*4)];
+  h.style.left = x + 'px';
+  h.style.top = y + 'px';
+  h.style.animationDuration = (2 + Math.random() * 2) + 's';
+  heartsContainer.appendChild(h);
+  setTimeout(() => h.remove(), 3000);
+}
+
+function showEnd() {
+  endScreen.style.display = 'flex';
+  document.getElementById('mainMessage').innerHTML =
+    `🌹 ۸۷ گل برای ۸۷ روزی که کنارمی 🌹`;
+  document.getElementById('subMessage').innerHTML =
+    `روزت مبارک ❤️`;
+
+  setInterval(() => {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = ['❤️','💕','💖','🌸','🌹'][Math.floor(Math.random()*5)];
+    h.style.left = Math.random() * W + 'px';
+    h.style.top = H + 'px';
+    h.style.fontSize = (20 + Math.random() * 30) + 'px';
+    h.style.animationDuration = (3 + Math.random() * 3) + 's';
+    endHearts.appendChild(h);
+    setTimeout(() => h.remove(), 6000);
+  }, 300);
+}
+
+function restartGame() {
+  loseScreen.style.display = 'none';
+  if (animationId) cancelAnimationFrame(animationId);
+  initGame();
+  loop();
+}
+
+window.addEventListener('resize', () => {
+  if (gameState === 'playing') {
+    W = window.innerWidth;
+    H = window.innerHeight;
+  }
+});
+
+// شروع
+initGame();
+loop();
+</script>
+</body>
+</html>
